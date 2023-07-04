@@ -5,7 +5,6 @@
 #include <linux/io.h>
 #include "gpio.h"
 #include "rcc.h"
-#include "head.h"
 
 int major; // 用于保存主设备号
 char kbuf[128] = { 0 };
