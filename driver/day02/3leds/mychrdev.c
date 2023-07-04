@@ -9,8 +9,8 @@
 
 int major; // 用于保存主设备号
 char kbuf[128] = { 0 };
-unsigned int *vir_moder;
-unsigned int *vir_odr;
+unsigned int *vir_gpioe;
+unsigned int *vir_gpiof;
 unsigned int *vir_rcc;
 
 // 封装操作方法
@@ -46,10 +46,13 @@ ssize_t mycdev_write(struct file *file, const char *ubuf, size_t size,
 		printk("copy_from_user filed\n");
 		return -EIO;
 	}
-	if (kbuf[0] == '1') { // 开关 LED1
-		// (*vir_odr) ^= (0x1 << 10);
-    ((gpio_t *)vir_odr)->ODR ^= (0x1 << 10);
-	} 
+	if (kbuf[0] == '1') { // 开关 LED1 PE10
+		((gpio_t *)vir_gpioe)->ODR ^= (0x1 << 10);
+	} else if (kbuf[0] == '2') { // 开关 LED2 PF10
+		((gpio_t *)vir_gpiof)->ODR ^= (0x1 << 10);
+	} else if (kbuf[0] == '3') { // 开关 LED3 PE8
+		((gpio_t *)vir_gpioe)->ODR ^= (0x1 << 8);
+	}
 	printk("%s:%s:%d\n", __FILE__, __func__, __LINE__);
 	return 0;
 }
@@ -78,22 +81,37 @@ static int __init mycdev_init(void)
 	}
 	printk("字符设备驱动注册成功major=%d\n", major);
 	//映射物理寄存器
-  vir_odr = ioremap((volatile unsigned int)GPIOE, sizeof(gpio_t));
-	if (vir_odr == NULL) {
+	vir_gpioe = ioremap((volatile unsigned int)GPIOE, sizeof(gpio_t));
+	if (vir_gpioe == NULL) {
 		printk("GPIOE结构体映射表失败\n");
 		return -EFAULT;
 	}
-  vir_rcc = ioremap((volatile unsigned int)RCC, sizeof(rcc_t));
+	vir_gpiof = ioremap((volatile unsigned int)GPIOF, sizeof(gpio_t));
+	if (vir_gpioe == NULL) {
+		printk("GPIOF结构体映射表失败\n");
+		return -EFAULT;
+	}
+	vir_rcc = ioremap((volatile unsigned int)RCC, sizeof(rcc_t));
 	if (vir_rcc == NULL) {
 		printk("RCC结构体映射表失败\n");
 		return -EFAULT;
 	}
 	printk("寄存器地址映射成功\n");
 	//寄存器初始化
-  ((rcc_t *)vir_rcc)->MP_AHB4ENSETR |= (1 << 4) | (1 << 5);
-  ((gpio_t *)vir_odr)->MODER &= (~(0X3 << 20));
-  ((gpio_t *)vir_odr)->MODER |= (0x1 << 20);
-  ((gpio_t *)vir_odr)->ODR &= (~(0x1 << 10));
+	((rcc_t *)vir_rcc)->MP_AHB4ENSETR |= (1 << 4) | (1 << 5);
+	// LED1 初始化
+	((gpio_t *)vir_gpioe)->MODER &= (~(0x3 << 20));
+	((gpio_t *)vir_gpioe)->MODER |= (0x1 << 20);
+	((gpio_t *)vir_gpioe)->ODR &= (~(0x1 << 10));
+	// LED2 初始化
+	((gpio_t *)vir_gpiof)->MODER &= (~(0x3 << 20));
+	((gpio_t *)vir_gpiof)->MODER |= (0x1 << 20);
+	((gpio_t *)vir_gpiof)->ODR &= (~(0x1 << 10));
+	// LED3 初始化
+	((gpio_t *)vir_gpioe)->MODER &= (~(0x3 << 16));
+	((gpio_t *)vir_gpioe)->MODER |= (0x1 << 16);
+	((gpio_t *)vir_gpioe)->ODR &= (~(0x1 << 8));
+
 	printk("硬件寄存器初始化成功\n");
 	return 0;
 }
@@ -101,8 +119,8 @@ static int __init mycdev_init(void)
 static void __exit mycdev_exit(void)
 {
 	//取消寄存器地址映射
-	iounmap(vir_moder);
-	iounmap(vir_odr);
+	iounmap(vir_gpioe);
+	iounmap(vir_gpiof);
 	iounmap(vir_rcc);
 	//字符设备驱动的注销
 	unregister_chrdev(major, "mychrdev");
