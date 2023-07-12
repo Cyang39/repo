@@ -1,0 +1,54 @@
+/dts-v1/;
+
+#include "stm32mp157.dtsi"
+#include "stm32mp15xa.dtsi"
+#include "stm32mp15-pinctrl.dtsi"
+#include "stm32mp15xxac-pinctrl.dtsi"
+#include "stm32mp15xx-fsmp1x.dtsi" 
+
+/ {
+  model = "HQYJ STM32MP157 FSMP1A Discovery Board";
+  compatible = "st,stm32mp157a-dk1", "st,stm32mp157";
+
+  aliases {
+    serial0 = &uart4;
+    serial5 = &usart3;
+  };
+
+  chosen {
+    stdout-path = "serial0:115200n8";
+  };
+
+  reserved-memory {
+    gpu_reserved: gpu@d4000000 {
+                    reg = <0xd4000000 0x4000000>;
+                    no-map;
+                  };
+
+    optee_memory: optee@0xde000000 {
+                    reg = <0xde000000 0x02000000>;
+                    no-map;
+                  };
+  };
+  
+  //自定义设备树 
+  mynode@0x12345678{ 
+		compatible = "hqyj,mynode"; 
+    	astring="hello 23031"; 
+		uint  =<0xaabbccdd 0x11223344>; 
+    	binarry=[00 0c 29 7b f9 be]; 
+    	mixed ="hello",[11 22],<0x12345678>; 
+	 };
+
+  myleds {
+     led1=<&gpioe 10 0>;    
+     led2=<&gpiof 10 0>; 
+     led3=<&gpioe 8 0>;  
+  };
+
+  mykeys{
+    interrupt-parent=<&gpiof>;
+    //9表示引用中断父节点时的索引信息  0表示默认设置
+    interrupts=<9 0>,<7 0>,<8 0>;
+  };
+};
