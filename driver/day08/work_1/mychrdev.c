@@ -23,9 +23,7 @@ struct timer_list mytimer; //定义定时器对象
 //定义定时器处理函数
 void mytimer_func(struct timer_list *timer)
 {
-	static int status = 0;
-	status = !status;
-	gpiod_set_value(gpiono, status);
+	gpiod_set_value(gpiono, !gpiod_get_value(gpiono));
 	//再次启用定时器
 	mod_timer(timer, jiffies + HZ);
 }

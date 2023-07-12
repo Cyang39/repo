@@ -21,13 +21,6 @@ int major;
 struct class *cls;
 struct device *dev;
 
-void toggle_led(int i)
-{
-	static int value[3] = { 0, 0, 0 };
-	value[i] = !value[i];
-	gpiod_set_value(led[i], value[i]);
-}
-
 static int mycdev_open(struct inode *inode, struct file *filp)
 {
 	return 0;
@@ -42,7 +35,7 @@ long mycdev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
 	case LED_TOGGLE:
-		toggle_led(arg);
+		gpiod_set_value(led[arg], !gpiod_get_value(led[arg]));
 		break;
 	}
 	return 0;
