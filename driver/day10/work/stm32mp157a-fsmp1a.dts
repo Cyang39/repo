@@ -1,0 +1,41 @@
+/dts-v1/;
+
+#include "stm32mp157.dtsi"
+#include "stm32mp15xa.dtsi"
+#include "stm32mp15-pinctrl.dtsi"
+#include "stm32mp15xxac-pinctrl.dtsi"
+#include "stm32mp15xx-fsmp1x.dtsi" 
+
+/ {
+  model = "HQYJ STM32MP157 FSMP1A Discovery Board";
+  compatible = "st,stm32mp157a-dk1", "st,stm32mp157";
+
+  myplatform {
+    compatible = "mahiro,myplatform";
+    reg=<0X12345678 0X400>;
+    interrupt-parent=<&gpiof>;
+    interrupts=<9 0>;
+    led1=<&gpioe 10 0>;
+  };
+
+  aliases {
+    serial0 = &uart4;
+    serial5 = &usart3;
+  };
+
+  chosen {
+    stdout-path = "serial0:115200n8";
+  };
+
+  reserved-memory {
+    gpu_reserved: gpu@d4000000 {
+                    reg = <0xd4000000 0x4000000>;
+                    no-map;
+                  };
+
+    optee_memory: optee@0xde000000 {
+                    reg = <0xde000000 0x02000000>;
+                    no-map;
+                  };
+  };
+};
