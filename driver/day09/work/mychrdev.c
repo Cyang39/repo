@@ -41,7 +41,8 @@ irqreturn_t myirq_handler(int irq, void *dev_id)
 {
 	number = !number;
 	gpiod_set_value(gpiono, number);
-	printk("key pressed, number=%d\n", number);
+  condition = 1;
+  wake_up_interruptible(&wq_head);
 	return IRQ_HANDLED;
 }
 
