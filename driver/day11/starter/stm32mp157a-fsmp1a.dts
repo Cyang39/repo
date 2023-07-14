@@ -1,0 +1,126 @@
+/dts-v1/;
+
+#include "stm32mp157.dtsi"
+#include "stm32mp15xa.dtsi"
+#include "stm32mp15-pinctrl.dtsi"
+#include "stm32mp15xxac-pinctrl.dtsi"
+#include "stm32mp15xx-fsmp1x.dtsi" 
+
+&i2c1 {
+  pinctrl-names = "default", "sleep";
+  pinctrl-0 = <&i2c1_pins_b>;
+  pinctrl-1 = <&i2c1_sleep_pins_b>;
+  i2c-scl-rising-time-ns = <100>;
+  i2c-scl-falling-time-ns = <7>;
+  status = "okay";
+  /delete-property/dmas;
+  /delete-property/dma-names;
+  si7006@40 {
+    compatible = "mahiro,si7006";
+    reg = <0x40>;
+  };
+};
+
+/ {
+  model = "HQYJ STM32MP157 FSMP1A Discovery Board";
+  compatible = "st,stm32mp157a-dk1", "st,stm32mp157";
+
+  myplatform {
+    compatible = "mahiro,myplatform";
+    reg=<0X12345678 0X400>;
+    interrupt-parent=<&gpiof>;
+    interrupts=<9 0>;
+    led1=<&gpioe 10 0>;
+  };
+
+  aliases {
+    serial0 = &uart4;
+    serial5 = &usart3;
+  };
+
+  chosen {
+    stdout-path = "serial0:115200n8";
+  };
+
+  reserved-memory {
+    gpu_reserved: gpu@d4000000 {
+                    reg = <0xd4000000 0x4000000>;
+                    no-map;
+                  };
+
+    optee_memory: optee@0xde000000 {
+                    reg = <0xde000000 0x02000000>;
+                    no-map;
+                  };
+  };
+  
+  //自定义设备树 
+  mynode@0x12345678{ 
+		compatible = "hqyj,mynode"; 
+    	astring="hello 23031"; 
+		uint  =<0xaabbccdd 0x11223344>; 
+    	binarry=[00 0c 29 7b f9 be]; 
+    	mixed ="hello",[11 22],<0x12345678>; 
+	 };
+
+
+  //     mynode@0x12345678{
+  //     	astring="hello 21091";
+  // 		uint  =<0xaabbccdd 0x11223344>;
+  //     	binarry=[00 0c 29 7b f9 be];
+  //     	mixed ="hello",[11 22],<0x12345678>;
+  // 	 };
+  // 	leds{
+  // 		core-leds{
+  // 			led1=<&gpioz 5 0>;
+  // 			led2=<&gpioz 6 0>;
+  // 			led3=<&gpioz 7 0>;
+  // 		};
+  // 		extend-leds{
+  // 			led1=<&gpioe 10 0>;
+  // 			led2=<&gpiof 10 0>;
+  // 			led3=<&gpioe 8 0>;
+  // 		};
+  // 	};	
+  // 	keyirq{
+  // 		key_gpio = <&gpiof 9 0>,<&gpiof 7 0>,<&gpiof 8 0>;
+  //     	interrupt-parent = <&gpiof>;  //指定中断的父节点
+  // 		interrupts=<9 0>,<7 0>,<8 0>;   //9中断的index号，0中断的触发方式（默认）
+  // 	};
+  // 	myplatform{
+  // 		compatible = "hqyj,hello2";
+  // 		led1 = <&gpioe 10 0>;
+  //     	interrupt-parent = <&gpiof>;  //指定中断的父节点
+  // 		interrupts=<9 0>;	
+  // 	};
+  //
+  // };
+  //
+  // &i2c1{
+  // 	pinctrl-names = "default", "sleep";
+  // 	pinctrl-0 = <&i2c1_pins_b>;
+  // 	pinctrl-1 = <&i2c1_sleep_pins_b>;
+  // 	i2c-scl-rising-time-ns = <100>;
+  // 	i2c-scl-falling-time-ns = <7>;
+  // 	status = "okay";
+  // 	/delete-property/dmas;
+  // 	/delete-property/dma-names;
+  //
+  // 	si7006@40{
+  // 		compatible = "sl,si7006";
+  // 	   reg = <0x40>;
+  // 	};
+  // };
+  // &spi4{
+  // 	pinctrl-names = "default", "sleep";
+  // 	pinctrl-0 = <&spi4_pins_b>;
+  // 	pinctrl-1 = <&spi4_sleep_pins_b>;     
+  // 	cs-gpios = <&gpioe 11 0>; //片选
+  // 	status = "okay";
+  //
+  // 	m74hc595@0{
+  // 		compatible = "hqyj,m74hc595";
+  // 		reg = <0>;
+  // 		spi-max-frequency = <10000000>; //10Mhz
+  // 	};
+};
