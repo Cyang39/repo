@@ -1,4 +1,5 @@
 #include "client.h"
+#include <stdio.h>
 
 struct login_form {
   char username[20];
@@ -13,9 +14,9 @@ void display_login_menu(struct login_form *form) {
 }
 
 void display_main_menu_for_user(int *choice) {
-  printf("1.注册\n");
-  printf("2.登录\n");
-  printf("3.退出\n");
+  printf("1.查询\n");
+  printf("2.修改\n");
+  printf("3.删除\n");
   printf("请输入>>> ");
   scanf("%d", choice);
 }
@@ -39,29 +40,47 @@ int main() {
     return -1;
   }
 
-  char buf[1024];
+  char buf[sizeof(struct message)];
   ssize_t read_size = 0;
   while (1) {
     struct login_form form;
+    struct message msg;
     display_login_menu(&form);
-    sprintf(buf, "%s %s\n", form.username, form.password);
+    gen_login_msg(&msg, form.username, form.password);
+    memcpy(buf, &msg, sizeof(msg));
+    // 发送登录信息
+    if (send(sfd, buf, strlen(buf), 0) < 0) {
+      ERR_MSG("send");
+      return -1;
+    }
     // 如果登录成功
     while (1) {
       int choice;
       display_main_menu_for_user(&choice);
-      sprintf(buf, "%d\n", choice);
-      buf[strlen(buf) - 1] = '\0';
-      if (send(sfd, buf, strlen(buf), 0) < 0) {
+      switch (choice) {
+      case 1:
+        msg.ctype = MSG_QUERY;
+        break;
+      case 2:
+        msg.ctype = MSG_UPDATE;
+        break;
+      case 3:
+        msg.ctype = MSG_DELETE;
+        break;
+      }
+      if (send(sfd, &msg, sizeof(msg), 0) < 0) {
         ERR_MSG("send");
         return -1;
       }
-      bzero(buf, sizeof(buf));
-      if ((read_size = recv(sfd, buf, sizeof(buf), 0)) < 0) {
+      bzero(&msg, sizeof(msg));
+      if ((read_size = recv(sfd, &msg, sizeof(msg), 0)) < 0) {
         ERR_MSG("recv");
         return -1;
       } else if (read_size == 0) {
         printf("server closed\n");
         break;
+      } else {
+        printf("recv: %s\n", (char *)&msg);
       }
     }
   }

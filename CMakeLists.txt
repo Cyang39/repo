@@ -9,5 +9,5 @@ include_directories(${PROJECT_SOURCE_DIR}/includes)
 # 可执行文件输出路径
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 # 需要编译的可执行文件
-add_executable(server server.c)
-add_executable(client client.c)
+add_executable(server server.c ${PROJECT_SOURCE_DIR}/library/message.c)
+add_executable(client client.c ${PROJECT_SOURCE_DIR}/library/message.c)

@@ -1,4 +1,5 @@
-#include "includes/server.h"
+#include "server.h"
+#include <stdio.h>
 
 int main() {
   // 创建套接字
@@ -36,7 +37,7 @@ int main() {
 
   struct epoll_event event;
   struct epoll_event events[MAX_CLIENT];
-  char buf[1024] = {0};
+  char buf[sizeof(struct message)] = {0};
 
   int epfd = epoll_create(MAX_CLIENT);
   if (epfd < 0) {
@@ -86,7 +87,20 @@ int main() {
             printf("client closed\n");
             close(events[i].data.fd);
           } else {
-            printf("recv: %s\n", buf);
+            struct message msg;
+            memcpy(&msg, &buf, sizeof(msg));
+            printf("%ld\n", sizeof(msg));
+            switch (msg.ctype) {
+            case MSG_QUERY:
+              printf("user request query\n");
+              break;
+            case MSG_DELETE:
+              printf("user request delete\n");
+              break;
+            case MSG_UPDATE:
+              printf("user request update\n");
+              break;
+            }
             write(events[i].data.fd, buf, n);
           }
         }
