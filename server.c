@@ -84,9 +84,10 @@ int main() {
           if (n == 0) {
             printf("client closed\n");
             close(events[i].data.fd);
+          } else {
+            printf("recv: %s\n", buf);
+            write(events[i].data.fd, buf, n);
           }
-          printf("recv: %s\n", buf);
-          write(events[i].data.fd, buf, n);
         }
       }
     }
