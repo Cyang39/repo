@@ -1,5 +1,4 @@
 #include "client.h"
-#include <stdio.h>
 
 struct login_form {
   char username[20];
@@ -56,10 +55,13 @@ int main() {
     // 如果登录成功
     while (1) {
       int choice;
+      char name[20];
       display_main_menu_for_user(&choice);
       switch (choice) {
       case 1:
-        msg.ctype = MSG_QUERY;
+        printf("请输入要查询的用户名>>> ");
+        scanf("%s", name);
+        gen_query_by_name_req_msg(&msg, name);
         break;
       case 2:
         msg.ctype = MSG_UPDATE;
@@ -81,6 +83,12 @@ int main() {
         break;
       } else {
         printf("recv: %s\n", (char *)&msg);
+        switch(msg.ctype) {
+          case MSG_QUERY_RES:
+            printf("debug");
+            print_info(&msg.st);
+            break;
+        }
       }
     }
   }

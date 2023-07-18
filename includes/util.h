@@ -1,8 +1,8 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 #define ERR_MSG(msg)                                                           \
   do {                                                                         \
@@ -20,16 +20,21 @@ enum cmd_type {
   MSG_OK,
   MSG_EXIT,
   MSG_QUERY,
+  MSG_QUERY_RES,
   MSG_UPDATE,
   MSG_DELETE,
 };
 
 enum user_type { USER_NORMAL = 1, USER_ADMIN };
+enum user_sex { FEMALE = 1, MALE };
 
 // 职员信息结构体
 struct info {
-  char name[20]; // 职员姓名
-  int age;       // 职员年龄
+  char name[20];       // 职员姓名
+  enum user_sex sex;   // 职员性别
+  int age;             // 职员年龄
+  char department[20]; // 职员部门
+  char phone[20];      // 职员电话
 };
 
 // 消息结构体

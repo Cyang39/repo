@@ -1,5 +1,6 @@
 #include "server.h"
 #include <stdio.h>
+#include <string.h>
 
 int main() {
   // 创建套接字
@@ -93,6 +94,16 @@ int main() {
             switch (msg.ctype) {
             case MSG_QUERY:
               printf("user request query\n");
+              printf("%s\n", msg.buf);
+              // mock data
+              struct info user;
+              user.age = 11;
+              user.sex = FEMALE;
+              strcpy(user.name, "zhangsan");
+              strcpy(user.department, "computer");
+              strcpy(user.phone, "11223344556");
+              printf("debug");
+              gen_query_by_name_res_msg(&msg, &user);
               break;
             case MSG_DELETE:
               printf("user request delete\n");
@@ -101,7 +112,7 @@ int main() {
               printf("user request update\n");
               break;
             }
-            write(events[i].data.fd, buf, n);
+            write(events[i].data.fd, &msg, n);
           }
         }
       }

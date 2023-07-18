@@ -2,6 +2,7 @@
 #define __SERVER_H__
 
 #include "util.h"
+#include "message.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
