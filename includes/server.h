@@ -3,6 +3,7 @@
 
 #include "util.h"
 #include "message.h"
+#include "dbhandler.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>

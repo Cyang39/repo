@@ -1,8 +1,18 @@
 #include "server.h"
-#include <stdio.h>
-#include <string.h>
 
-int main() {
+int main(int argc, const char *argv[]) {
+  if (argc != 2) {
+    printf("Usage: %s file.db\n", argv[0]);
+    return -1;
+  }
+  // 打开数据库
+  sqlite3 *db;
+  if (sqlite3_open(argv[1], &db) != SQLITE_OK) {
+    printf("error on sqlite_open(): %s\n", sqlite3_errmsg(db));
+    exit(-1);
+  }
+  // 初始化数据库
+  init_db(db);
   // 创建套接字
   int sfd = socket(AF_INET, SOCK_STREAM, 0);
   if (sfd < 0) {
