@@ -76,6 +76,7 @@ int main() {
           }
         } else {
           // 读取数据
+          memset(buf, 0, sizeof(buf));
           int n = read(events[i].data.fd, buf, sizeof(buf));
           if (n < 0) {
             ERR_MSG("read");
