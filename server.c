@@ -27,33 +27,68 @@ int main() {
     ERR_MSG("listen");
     return -1;
   }
+
   // 接收连接
+  struct sockaddr_in client_store[MAX_CLIENT];
   struct sockaddr_in client_addr;
   socklen_t len = sizeof(client_addr);
-  int cfd = accept(sfd, (struct sockaddr *)&client_addr, &len);
-  if (cfd < 0) {
-    ERR_MSG("accept");
+  int cfd;
+
+  struct epoll_event event;
+  struct epoll_event events[MAX_CLIENT];
+  char buf[1024] = {0};
+
+  int epfd = epoll_create(MAX_CLIENT);
+  if (epfd < 0) {
+    ERR_MSG("epoll_create");
     return -1;
   }
-  char buf[1024] = {0};
+  event.events = EPOLLIN;
+  event.data.fd = sfd;
+  if (epoll_ctl(epfd, EPOLL_CTL_ADD, sfd, &event) < 0) {
+    ERR_MSG("epoll_ctl");
+    return -1;
+  }
+
   while (1) {
-    // 接收数据
-    int ret = recv(cfd, buf, sizeof(buf), 0);
-    if (ret < 0) {
-      ERR_MSG("recv");
+    int n = epoll_wait(epfd, events, MAX_CLIENT, -1);
+    if (n < 0) {
+      ERR_MSG("epoll_wait");
       return -1;
-    } else if (ret == 0) {
-      printf("client close\n");
-      break;
     }
-    printf("client: %s\n", buf);
-    // 发送数据
-    memset(buf, 0x00, sizeof(buf));
-    scanf("%s", buf);
-    ret = send(cfd, buf, strlen(buf), 0);
-    if (ret < 0) {
-      ERR_MSG("send");
-      return -1;
+    for (int i = 0; i < n; i++) {
+      if (events[i].events & EPOLLIN) {
+        // 新连接
+        if (events[i].data.fd == sfd) {
+          cfd = accept(sfd, (struct sockaddr *)&client_addr, &len);
+          if (cfd < 0) {
+            ERR_MSG("accept");
+            return -1;
+          }
+          printf("client %s:%d connected\n", inet_ntoa(client_addr.sin_addr),
+                 ntohs(client_addr.sin_port));
+          // 添加到epoll
+          event.events = EPOLLIN;
+          event.data.fd = cfd;
+          if (epoll_ctl(epfd, EPOLL_CTL_ADD, cfd, &event) < 0) {
+            ERR_MSG("epoll_ctl");
+            return -1;
+          }
+        } else {
+          // 读取数据
+          int n = read(events[i].data.fd, buf, sizeof(buf));
+          if (n < 0) {
+            ERR_MSG("read");
+            return -1;
+          }
+          if (n == 0) {
+            printf("client closed\n");
+            close(events[i].data.fd);
+          }
+          printf("recv: %s\n", buf);
+          write(events[i].data.fd, buf, n);
+        }
+      }
     }
   }
   return 0;
