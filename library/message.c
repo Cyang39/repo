@@ -20,6 +20,11 @@ void trim(char *str) {
   str[j] = '\0'; // 添加字符串结束符
 }
 
+struct username_pair {
+  char username[20];
+  char password[20];
+};
+
 // 打印用户信息
 void print_info(struct info *user) {
   printf("Name:\t%s\n", user->name);
@@ -33,19 +38,24 @@ void print_info(struct info *user) {
 void gen_login_msg(struct message *msg, char *username, char *password) {
   memset(msg, 0, sizeof(struct message));
   msg->ctype = MSG_LOGIN;
-  sprintf(msg->buf, "%-20s%-20s", username, password);
+  struct username_pair pair;
+  strcpy(pair.username, username);
+  strcpy(pair.password, password);
+  memcpy(msg->buf, &pair, sizeof(struct username_pair));
 }
 
 // 从消息结构体中获取密码
 void get_password(struct message *msg, char *password) {
-  memcpy(password, msg->buf + 20, 20);
-  trim(password);
+  struct username_pair pair;
+  memcpy(&pair, msg->buf, sizeof(struct username_pair));
+  strcpy(password, pair.password);
 }
 
 // 从消息结构体获取用户名
 void get_username(struct message *msg, char *username) {
-  memcpy(username, msg->buf, 20);
-  trim(username);
+  struct username_pair pair;
+  memcpy(&pair, msg->buf, sizeof(struct username_pair));
+  strcpy(username, pair.username);
 }
 
 // 构建一个“通过用户名称查询”消息结构体

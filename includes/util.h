@@ -1,6 +1,8 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
+#define DEBUG
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +11,11 @@
   do {                                                                         \
     fprintf(stderr, "line: %d\n", __LINE__);                                   \
     perror(msg);                                                               \
+  } while (0)
+
+#define DEBUG_MSG(msg) \
+  do {                 \
+    printf("[%s, %d]%s\n", __FILE_NAME__, __LINE__, msg); \
   } while (0)
 
 enum cmd_type {

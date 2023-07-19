@@ -1,6 +1,4 @@
 #include "server.h"
-#include "dbhandler.h"
-#include "util.h"
 
 #define ADMIN_NAME "root"
 #define ADMIN_PASSWD "1234"
@@ -119,7 +117,22 @@ int main(int argc, const char *argv[]) {
                 else
                   printf("admin login failed\n");
               } else {
-                printf("normal user login\n");
+#ifdef DEBUG
+                char dbug_msg[100];
+                sprintf(dbug_msg, "login>username: '%s'", username);
+                DEBUG_MSG(dbug_msg);
+                sprintf(dbug_msg, "login>password: '%s'", password);
+                DEBUG_MSG(dbug_msg);
+#endif
+                ret = check_db_by_username_and_password(db, (char *)&username,
+                                                        (char *)&password);
+                if (ret < 0) {
+                  msg.ctype = MSG_ERROR;
+                  strcpy(msg.buf, "用户名或密码错误");
+                } else {
+                  msg.ctype = MSG_OK;
+                  strcpy(msg.buf, "登录成功");
+                }
               }
               break;
             case MSG_QUERY:

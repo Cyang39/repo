@@ -44,25 +44,32 @@ int main() {
 
   ssize_t read_size = 0;
   while (1) {
-    struct login_form form;
     struct message msg;
-    display_login_menu(&form);
-    gen_login_msg(&msg, form.username, form.password);
-    // 发送登录信息
-    if (send(sfd, &msg, sizeof(msg), 0) < 0) {
-      ERR_MSG("send");
-      return -1;
-    }
-    // 接收登录结果
-    bzero(&msg, sizeof(msg));
-    if ((read_size = recv(sfd, &msg, sizeof(msg), 0)) < 0) {
-      ERR_MSG("recv");
-      return -1;
-    } else if (read_size == 0) {
-      printf("server closed\n");
-      break;
-    } else {
-      printf("recv: %s\n", msg.buf);
+    while (1) { // loop for login
+      struct login_form form;
+      display_login_menu(&form);
+      gen_login_msg(&msg, form.username, form.password);
+      // 发送登录信息
+      if (send(sfd, &msg, sizeof(msg), 0) < 0) {
+        ERR_MSG("send");
+        return -1;
+      }
+      // 接收登录结果
+      bzero(&msg, sizeof(msg));
+      if ((read_size = recv(sfd, &msg, sizeof(msg), 0)) < 0) {
+        ERR_MSG("recv");
+        return -1;
+      } else if (read_size == 0) {
+        printf("server closed\n");
+        break;
+      } else {
+        if (msg.ctype == MSG_OK) {
+          printf("登录成功\n");
+          break;
+        } else { // MSG_ERROR
+          printf("%s\n", msg.buf);
+        }
+      }
     }
     bzero(&msg, sizeof(msg));
     // 如果登录成功

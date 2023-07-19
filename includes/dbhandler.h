@@ -17,10 +17,15 @@
 #define SQL_CHECK_TABLE_BY_USERNAME                                            \
   "SELECT COUNT(*) FROM employee WHERE name = \"%s\";"
 
+#define SQL_CHECK_TABLE_BY_USERNAME_AND_PASSWORD                              \
+  "SELECT COUNT(*) FROM employee WHERE name = \"%s\" AND password = \"%s\";"
+
 void init_db(sqlite3 *db);
 // 插入员工数据到数据库
 int insert_db(sqlite3 *db, struct info *user);
 // 检查用户名是否存在
 int check_db_by_username(sqlite3 *db, char *name);
+// 检查用户名和密码是否匹配
+int check_db_by_username_and_password(sqlite3 *db, char *name, char *password);
 
 #endif // !__DBHANDLER_H__

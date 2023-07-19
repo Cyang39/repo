@@ -54,3 +54,19 @@ int check_db_by_username(sqlite3 *db, char *name) {
   }
   return 0;
 }
+
+int check_db_by_username_and_password(sqlite3 *db, char *name, char *password) {
+  int count;
+  char *sql;
+  char query[1024] = {0};
+  sprintf(query, SQL_CHECK_TABLE_BY_USERNAME_AND_PASSWORD, name, password);
+  sql = query;
+  if (sqlite3_exec(db, sql, callback_count, &count, NULL) != SQLITE_OK) {
+    printf("error on sqlite_exec(): %s\n", sqlite3_errmsg(db));
+    exit(-1);
+  }
+  if (0 == count) {
+    return -1;
+  }
+  return 0;
+}
