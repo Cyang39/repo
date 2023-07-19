@@ -11,6 +11,9 @@
 #define SQL_CREATE_LOG_TABLE \
   "CREATE TABLE IF NOT EXISTS log (name TEXT, time TEXT, action TEXT);"
 
+#define SQL_INSERT_TABLE \
+  "INSERT INTO employee VALUES ('%s', %d, '%s', %d, '%s');"
+
 void init_db(sqlite3 *db);
 
 #endif // !__DBHANDLER_H__

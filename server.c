@@ -1,5 +1,8 @@
 #include "server.h"
 
+#define ADMIN_NAME "root"
+#define ADMIN_PASSWD "1234"
+
 int main(int argc, const char *argv[]) {
   if (argc != 2) {
     printf("Usage: %s file.db\n", argv[0]);
@@ -99,9 +102,24 @@ int main(int argc, const char *argv[]) {
             close(events[i].data.fd);
           } else {
             struct message msg;
+            char username[20];
+            char password[20];
             memcpy(&msg, &buf, sizeof(msg));
-            printf("%ld\n", sizeof(msg));
             switch (msg.ctype) {
+            case MSG_LOGIN:
+              printf("user request login\n");
+              get_username(&msg, (char *)&username);
+              get_password(&msg, (char *)&password);
+              if (strcmp(username, ADMIN_NAME) == 0) {
+                printf("admin login\n");
+                if (strcmp(password, ADMIN_PASSWD) == 0)
+                  printf("admin login success\n");
+                else
+                  printf("admin login failed\n");
+              } else {
+                printf("normal user login\n");
+              }
+              break;
             case MSG_QUERY:
               printf("user request query\n");
               printf("%s\n", msg.buf);

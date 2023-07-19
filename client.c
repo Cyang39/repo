@@ -1,4 +1,5 @@
 #include "client.h"
+#include <strings.h>
 
 struct login_form {
   char username[20];
@@ -39,19 +40,29 @@ int main() {
     return -1;
   }
 
-  char buf[sizeof(struct message)];
   ssize_t read_size = 0;
   while (1) {
     struct login_form form;
     struct message msg;
     display_login_menu(&form);
     gen_login_msg(&msg, form.username, form.password);
-    memcpy(buf, &msg, sizeof(msg));
     // 发送登录信息
-    if (send(sfd, buf, strlen(buf), 0) < 0) {
+    if (send(sfd, &msg, sizeof(msg), 0) < 0) {
       ERR_MSG("send");
       return -1;
     }
+    // 接收登录结果
+    bzero(&msg, sizeof(msg));
+    if ((read_size = recv(sfd, &msg, sizeof(msg), 0)) < 0) {
+      ERR_MSG("recv");
+      return -1;
+    } else if (read_size == 0) {
+      printf("server closed\n");
+      break;
+    } else {
+      printf("recv: %s\n", msg.buf);
+    }
+    bzero(&msg, sizeof(msg));
     // 如果登录成功
     while (1) {
       int choice;
@@ -83,11 +94,11 @@ int main() {
         break;
       } else {
         printf("recv: %s\n", (char *)&msg);
-        switch(msg.ctype) {
-          case MSG_QUERY_RES:
-            printf("debug");
-            print_info(&msg.st);
-            break;
+        switch (msg.ctype) {
+        case MSG_QUERY_RES:
+          printf("debug");
+          print_info(&msg.st);
+          break;
         }
       }
     }
