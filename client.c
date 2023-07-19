@@ -1,7 +1,4 @@
 #include "client.h"
-#include "util.h"
-#include <stdio.h>
-#include <strings.h>
 
 struct login_form {
   char username[20];
@@ -117,6 +114,8 @@ int main() {
       } else {
         printf("recv: %s\n", (char *)&msg);
         switch (msg.ctype) {
+        case MSG_ERROR:
+          printf("error: %s\n", msg.buf);
         case MSG_QUERY_RES:
           printf("debug");
           print_info(&msg.st);

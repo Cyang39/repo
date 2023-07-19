@@ -104,7 +104,7 @@ int main(int argc, const char *argv[]) {
             printf("client closed\n");
             close(events[i].data.fd);
           } else {
-            struct message msg;
+            struct message msg; // 接受和发送使用同一个结构体
             char username[20];
             char password[20];
             memcpy(&msg, &buf, sizeof(msg));
@@ -139,9 +139,9 @@ int main(int argc, const char *argv[]) {
               // 此时客户端传来的 msg.st 是一个完整的员工信息
               ret = insert_db(db, &msg.st);
               if (ret < 0) {
-                ERR_MSG("employee insert fail\n");
+                msg.ctype = MSG_ERROR;
+                strcpy(msg.buf, "该员工已存在");
               }
-              // TBD: 回复客户端
               break;
             case MSG_DELETE:
               printf("user request delete\n");

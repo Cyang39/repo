@@ -15,6 +15,7 @@ enum cmd_type {
   MSG_LOGIN = 1,
   MSG_LOGOUT,
   MSG_OK,
+  MSG_ERROR,
   MSG_QUERY,
   MSG_QUERY_RES,
   MSG_INSERT,
