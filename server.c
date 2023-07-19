@@ -1,4 +1,6 @@
 #include "server.h"
+#include "dbhandler.h"
+#include "util.h"
 
 #define ADMIN_NAME "root"
 #define ADMIN_PASSWD "1234"
@@ -65,6 +67,7 @@ int main(int argc, const char *argv[]) {
     return -1;
   }
 
+  int ret; // 处理错误用的返回值临时保存变量
   while (1) {
     int n = epoll_wait(epfd, events, MAX_CLIENT, -1);
     if (n < 0) {
@@ -111,7 +114,6 @@ int main(int argc, const char *argv[]) {
               get_username(&msg, (char *)&username);
               get_password(&msg, (char *)&password);
               if (strcmp(username, ADMIN_NAME) == 0) {
-                printf("admin login\n");
                 if (strcmp(password, ADMIN_PASSWD) == 0)
                   printf("admin login success\n");
                 else
@@ -132,6 +134,14 @@ int main(int argc, const char *argv[]) {
               strcpy(user.phone, "11223344556");
               printf("debug");
               gen_query_by_name_res_msg(&msg, &user);
+              break;
+            case MSG_INSERT:
+              // 此时客户端传来的 msg.st 是一个完整的员工信息
+              ret = insert_db(db, &msg.st);
+              if (ret < 0) {
+                ERR_MSG("employee insert fail\n");
+              }
+              // TBD: 回复客户端
               break;
             case MSG_DELETE:
               printf("user request delete\n");

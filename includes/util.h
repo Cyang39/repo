@@ -2,8 +2,8 @@
 #define __UTIL_H__
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define ERR_MSG(msg)                                                           \
   do {                                                                         \
@@ -14,14 +14,11 @@
 enum cmd_type {
   MSG_LOGIN = 1,
   MSG_LOGOUT,
-  MSG_SEND,
-  MSG_RECV,
-  MSG_LIST,
-  MSG_ERROR,
   MSG_OK,
-  MSG_EXIT,
   MSG_QUERY,
   MSG_QUERY_RES,
+  MSG_INSERT,
+  MSG_INSERT_RES,
   MSG_UPDATE,
   MSG_DELETE,
 };
@@ -32,7 +29,9 @@ enum user_sex { FEMALE = 1, MALE };
 // 职员信息结构体
 struct info {
   char name[20];       // 职员姓名
+  char password[20];   // 职员密码
   enum user_sex sex;   // 职员性别
+  enum user_type type; // 职员类型
   int age;             // 职员年龄
   char department[20]; // 职员部门
   char phone[20];      // 职员电话

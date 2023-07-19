@@ -1,4 +1,6 @@
 #include "client.h"
+#include "util.h"
+#include <stdio.h>
 #include <strings.h>
 
 struct login_form {
@@ -14,11 +16,14 @@ void display_login_menu(struct login_form *form) {
 }
 
 void display_main_menu_for_user(int *choice) {
-  printf("1.查询\n");
-  printf("2.修改\n");
-  printf("3.删除\n");
-  printf("请输入>>> ");
-  scanf("%d", choice);
+  while (*choice < 1 || *choice > 4) {
+    printf("1. 查询\n");
+    printf("2. 修改\n");
+    printf("3. 删除\n");
+    printf("4. 添加\n");
+    printf("请输入>>> ");
+    scanf("%d", choice);
+  }
 }
 
 void display_main_menu_for_admin(int *choice) {}
@@ -79,6 +84,23 @@ int main() {
         break;
       case 3:
         msg.ctype = MSG_DELETE;
+        break;
+      case 4:
+        msg.ctype = MSG_INSERT;
+        printf("请输入要添加的用户名>>> ");
+        scanf("%s", msg.st.name);
+        printf("请输入要添加的用户年龄>>> ");
+        scanf("%d", &msg.st.age);
+        printf("请输入要添加的用户性别(1:Female/2:Male)>>> ");
+        scanf("%d", (int *)&msg.st.sex);
+        printf("请输入要添加的用户电话>>> ");
+        scanf("%s", msg.st.phone);
+        printf("请输入要添加的用户部门>>> ");
+        scanf("%s", msg.st.department);
+        printf("请输入要添加的用户密码>>> ");
+        scanf("%s", msg.st.password);
+        printf("请输入要添加的用户权限(1:User/2:Admin)>>> ");
+        scanf("%d", (int *)&msg.st.type);
         break;
       }
       if (send(sfd, &msg, sizeof(msg), 0) < 0) {
