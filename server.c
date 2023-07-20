@@ -142,10 +142,26 @@ int main(int argc, const char *argv[]) {
               break;
             case MSG_QUERY:
               printf("user request query\n");
-              printf("%s\n", msg.buf); // buf 为要查找的员工 name
+              // buf 为要查找的员工 name
+#ifdef DEBUG
+              char dbug_msg[2048];
+              sprintf(dbug_msg, "query>username: '%s'", msg.buf);
+              DEBUG_MSG(dbug_msg);
+#endif
+              if (check_user_type(db, msg.name) == USER_NORMAL &&
+                  strcmp(msg.buf, msg.name) != 0) {
+                msg.ctype = MSG_ERROR;
+                strcpy(msg.buf, "普通用户只能查询自己的信息");
+                break;
+              }
               struct info user;
-              query_info_db_by_username(db, msg.buf, &user);
-              gen_query_by_name_res_msg(&msg, &user);
+              ret = query_info_db_by_username(db, msg.buf, &user);
+              if (ret < 0) {
+                msg.ctype = MSG_ERROR;
+                strcpy(msg.buf, "该员工不存在");
+              } else {
+                gen_query_by_name_res_msg(&msg, &user);
+              }
               break;
             case MSG_INSERT:
               // 此时客户端传来的 msg.st 是一个完整的员工信息

@@ -32,5 +32,7 @@ int check_db_by_username(sqlite3 *db, char *name);
 int check_db_by_username_and_password(sqlite3 *db, char *name, char *password);
 // 从数据库获取员工结构体
 int query_info_db_by_username(sqlite3 *db, char *name, struct info *st);
+// 检查用户的类别
+enum user_type check_user_type(sqlite3 *db, char *name);
 
 #endif // !__DBHANDLER_H__

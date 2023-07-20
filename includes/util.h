@@ -45,12 +45,5 @@ struct info {
   char phone[20];      // 职员电话
 };
 
-// 消息结构体
-struct message {
-  enum user_type utype; // 用户类型
-  enum cmd_type ctype;  // 命令类型
-  char buf[1024];       // 消息内容
-  struct info st;
-};
 
 #endif // !__UTIL_H__

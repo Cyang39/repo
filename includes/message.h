@@ -3,6 +3,14 @@
 
 #include "util.h"
 
+// 消息结构体
+struct message {
+  char name[20];        // 发送方姓名
+  enum cmd_type ctype;  // 命令类型
+  char buf[1024];       // 消息内容
+  struct info st;       // 员工信息
+};
+
 // 打印职员信息
 void print_info(struct info *user);
 // 生成登录消息结构体

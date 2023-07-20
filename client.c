@@ -1,4 +1,7 @@
 #include "client.h"
+#include <string.h>
+
+char my_name[20] = {0};
 
 struct login_form {
   char username[20];
@@ -65,6 +68,7 @@ int main() {
       } else {
         if (msg.ctype == MSG_OK) {
           printf("登录成功\n");
+          strcpy(my_name, form.username);
           break;
         } else { // MSG_ERROR
           printf("%s\n", msg.buf);
@@ -108,11 +112,13 @@ int main() {
         scanf("%d", (int *)&msg.st.type);
         break;
       }
+      strcpy(msg.name, my_name);
       if (send(sfd, &msg, sizeof(msg), 0) < 0) {
         ERR_MSG("send");
         return -1;
       }
       bzero(&msg, sizeof(msg));
+      // 接受部分====================================================
       if ((read_size = recv(sfd, &msg, sizeof(msg), 0)) < 0) {
         ERR_MSG("recv");
         return -1;

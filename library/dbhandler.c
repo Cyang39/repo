@@ -95,3 +95,9 @@ int query_info_db_by_username(sqlite3 *db, char *name, struct info *st) {
   sqlite3_free_table(result);
   return 0;
 }
+
+enum user_type check_user_type(sqlite3 *db, char *name) {
+  struct info st;
+  query_info_db_by_username(db, name, &st);
+  return st.type;
+}
