@@ -1,10 +1,32 @@
 #include "server.h"
 
-#define ADMIN_NAME "root"
-#define ADMIN_PASSWD "1234"
-
 sqlite3 *db; // 数据库
 
+// 处理登录请求
+void on_login_request(struct message *msg) {
+  char username[20];
+  char password[20];
+  get_username(msg, (char *)&username);
+  get_password(msg, (char *)&password);
+#ifdef DEBUG
+  char dbug_msg[100];
+  sprintf(dbug_msg, "login>username: '%s'", username);
+  DEBUG_MSG(dbug_msg);
+  sprintf(dbug_msg, "login>password: '%s'", password);
+  DEBUG_MSG(dbug_msg);
+#endif
+  int ret = check_db_by_username_and_password(db, (char *)&username,
+                                              (char *)&password);
+  if (ret < 0) {
+    msg->ctype = MSG_ERROR;
+    strcpy(msg->buf, "用户名或密码错误");
+  } else {
+    msg->ctype = MSG_OK;
+    strcpy(msg->buf, "登录成功");
+  }
+}
+
+// 处理查询请求
 void on_query_request(struct message *msg) {
 #ifdef DEBUG
   // buf 为要查找的员工 name
@@ -149,7 +171,6 @@ int main(int argc, const char *argv[]) {
     return -1;
   }
 
-  int ret; // 处理错误用的返回值临时保存变量
   while (1) {
     int n = epoll_wait(epfd, events, MAX_CLIENT, -1);
     if (n < 0) {
@@ -187,42 +208,10 @@ int main(int argc, const char *argv[]) {
             close(events[i].data.fd);
           } else {
             struct message msg; // 接受和发送使用同一个结构体
-            char username[20];
-            char password[20];
             memcpy(&msg, &buf, sizeof(msg));
             switch (msg.ctype) {
-            case MSG_LOGIN:
-              printf("user request login\n");
-              get_username(&msg, (char *)&username);
-              get_password(&msg, (char *)&password);
-              if (strcmp(username, ADMIN_NAME) == 0) {
-                if (strcmp(password, ADMIN_PASSWD) == 0) {
-                  printf("admin login success\n");
-                  msg.ctype = MSG_OK;
-                  strcpy(msg.buf, "登录成功");
-                } else {
-                  printf("admin login failed\n");
-                  msg.ctype = MSG_ERROR;
-                  strcpy(msg.buf, "用户名或密码错误");
-                }
-              } else {
-#ifdef DEBUG
-                char dbug_msg[100];
-                sprintf(dbug_msg, "login>username: '%s'", username);
-                DEBUG_MSG(dbug_msg);
-                sprintf(dbug_msg, "login>password: '%s'", password);
-                DEBUG_MSG(dbug_msg);
-#endif
-                ret = check_db_by_username_and_password(db, (char *)&username,
-                                                        (char *)&password);
-                if (ret < 0) {
-                  msg.ctype = MSG_ERROR;
-                  strcpy(msg.buf, "用户名或密码错误");
-                } else {
-                  msg.ctype = MSG_OK;
-                  strcpy(msg.buf, "登录成功");
-                }
-              }
+            case MSG_LOGIN: // 用户登录
+              on_login_request(&msg);
               break;
             case MSG_QUERY: // 查询员工信息
               on_query_request(&msg);

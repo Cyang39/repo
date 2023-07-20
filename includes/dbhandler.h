@@ -27,6 +27,9 @@
 #define SQL_CHECK_TABLE_BY_USERNAME_AND_PASSWORD                               \
   "SELECT COUNT(*) FROM employee WHERE name = \"%s\" AND password = \"%s\";"
 
+#define SQL_COUNT_ADMIN                                                        \
+  "SELECT COUNT(*) FROM employee WHERE type = 2;"
+
 #define SQL_QUERY_TABLE_BY_USERNAME                                            \
   "SELECT * FROM employee WHERE name = \"%s\";"
 
@@ -43,6 +46,8 @@ int delete_db_by_username(sqlite3 *db, char *name);
 int update_db_by_username(sqlite3 *db, char *name, struct info *user);
 // 从数据库获取员工结构体
 int query_info_db_by_username(sqlite3 *db, char *name, struct info *st);
+// 从数据库查看是否存在管理员
+int check_admin_db(sqlite3 *db);
 // 检查用户的类别
 enum user_type check_user_type(sqlite3 *db, char *name);
 

@@ -5,6 +5,20 @@ int callback_count(void *count, int argc, char **argv, char **azColName) {
   return 0;
 }
 
+int check_admin_db(sqlite3 *db) {
+  int count;
+  char *sql;
+  sql = SQL_COUNT_ADMIN;
+  if (sqlite3_exec(db, sql, callback_count, &count, NULL) != SQLITE_OK) {
+    printf("error on sqlite_exec(): %s\n", sqlite3_errmsg(db));
+    exit(-1);
+  }
+  if (0 == count) {
+    return -1;
+  }
+  return 1;
+}
+
 void init_db(sqlite3 *db) {
   char *sql;
   // 如果数据表不存在创建它
@@ -18,6 +32,18 @@ void init_db(sqlite3 *db) {
   if (sqlite3_exec(db, sql, NULL, NULL, NULL) != SQLITE_OK) {
     printf("error on sqlite_exec(): %s\n", sqlite3_errmsg(db));
     exit(-1);
+  }
+  // 如果管理员不存在创建它
+  if (check_admin_db(db) == -1) {
+    struct info admin;
+    strcpy(admin.name, "admin");
+    strcpy(admin.password, "admin");
+    admin.age = 0;
+    admin.sex = FEMALE;
+    admin.type = USER_ADMIN;
+    strcpy(admin.department, "admin");
+    strcpy(admin.phone, "admin");
+    insert_db(db, &admin);
   }
 }
 
@@ -118,13 +144,14 @@ int delete_db_by_username(sqlite3 *db, char *name) {
 }
 
 int update_db_by_username(sqlite3 *db, char *name, struct info *user) {
-  if(check_db_by_username(db, name) == -1) {
+  if (check_db_by_username(db, name) == -1) {
     return -1;
   }
   char *sql;
   char query[1024] = {0};
-  sprintf(query, SQL_UPDATE_TABLE_BY_USERNAME, user->name, user->password, user->age,
-          user->department, user->sex, user->phone, user->type, name);
+  sprintf(query, SQL_UPDATE_TABLE_BY_USERNAME, user->name, user->password,
+          user->age, user->department, user->sex, user->phone, user->type,
+          name);
   sql = query;
   if (sqlite3_exec(db, sql, NULL, NULL, NULL) != SQLITE_OK) {
     printf("error on sqlite_exec(): %s\n", sqlite3_errmsg(db));
@@ -132,4 +159,3 @@ int update_db_by_username(sqlite3 *db, char *name, struct info *user) {
   }
   return 0;
 }
-
