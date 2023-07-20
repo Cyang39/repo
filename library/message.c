@@ -61,8 +61,8 @@ void get_username(struct message *msg, char *username) {
 // 构建一个“通过用户名称查询”消息结构体
 void gen_query_by_name_req_msg(struct message *msg, char *name) {
   memset(msg, 0, sizeof(struct message));
-  msg->ctype = MSG_QUERY;
-  sprintf(msg->buf, "%-20s%-20s", "name", name);
+  msg->ctype = MSG_QUERY; // 消息类型为查询
+  sprintf(msg->buf, "%s", name); // 消息内容为用户名
 }
 
 // 回复“通过用户名称查询”消息结构体

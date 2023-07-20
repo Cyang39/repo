@@ -73,8 +73,9 @@ int main() {
     }
     bzero(&msg, sizeof(msg));
     // 如果登录成功
+    int choice;
     while (1) {
-      int choice;
+      choice = 0;
       char name[20];
       display_main_menu_for_user(&choice);
       switch (choice) {
@@ -117,16 +118,17 @@ int main() {
         return -1;
       } else if (read_size == 0) {
         printf("server closed\n");
-        break;
+        break; // choice loop
       } else {
         printf("recv: %s\n", (char *)&msg);
         switch (msg.ctype) {
         case MSG_ERROR:
           printf("error: %s\n", msg.buf);
+          break; // switch res type
         case MSG_QUERY_RES:
           printf("debug");
           print_info(&msg.st);
-          break;
+          break; // switch res type
         }
       }
     }

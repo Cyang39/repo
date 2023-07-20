@@ -112,10 +112,15 @@ int main(int argc, const char *argv[]) {
               get_username(&msg, (char *)&username);
               get_password(&msg, (char *)&password);
               if (strcmp(username, ADMIN_NAME) == 0) {
-                if (strcmp(password, ADMIN_PASSWD) == 0)
+                if (strcmp(password, ADMIN_PASSWD) == 0) {
                   printf("admin login success\n");
-                else
+                  msg.ctype = MSG_OK;
+                  strcpy(msg.buf, "登录成功");
+                } else {
                   printf("admin login failed\n");
+                  msg.ctype = MSG_ERROR;
+                  strcpy(msg.buf, "用户名或密码错误");
+                }
               } else {
 #ifdef DEBUG
                 char dbug_msg[100];
@@ -137,15 +142,9 @@ int main(int argc, const char *argv[]) {
               break;
             case MSG_QUERY:
               printf("user request query\n");
-              printf("%s\n", msg.buf);
-              // mock data
+              printf("%s\n", msg.buf); // buf 为要查找的员工 name
               struct info user;
-              user.age = 11;
-              user.sex = FEMALE;
-              strcpy(user.name, "zhangsan");
-              strcpy(user.department, "computer");
-              strcpy(user.phone, "11223344556");
-              printf("debug");
+              query_info_db_by_username(db, msg.buf, &user);
               gen_query_by_name_res_msg(&msg, &user);
               break;
             case MSG_INSERT:
