@@ -18,19 +18,6 @@
     printf("[%s, %d]%s\n", __FILE_NAME__, __LINE__, msg); \
   } while (0)
 
-enum cmd_type {
-  MSG_LOGIN = 1,
-  MSG_LOGOUT,
-  MSG_OK,
-  MSG_ERROR,
-  MSG_QUERY,
-  MSG_QUERY_RES,
-  MSG_INSERT,
-  MSG_INSERT_RES,
-  MSG_UPDATE,
-  MSG_DELETE,
-};
-
 enum user_type { USER_NORMAL = 1, USER_ADMIN };
 enum user_sex { FEMALE = 1, MALE };
 
@@ -44,6 +31,5 @@ struct info {
   char department[20]; // 职员部门
   char phone[20];      // 职员电话
 };
-
 
 #endif // !__UTIL_H__

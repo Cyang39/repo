@@ -1,9 +1,8 @@
 #ifndef __SERVER_H__
 #define __SERVER_H__
 
-#include "util.h"
-#include "message.h"
 #include "dbhandler.h"
+#include "message.h"
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>

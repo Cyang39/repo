@@ -1,5 +1,4 @@
 #include "client.h"
-#include <string.h>
 
 char my_name[20] = {0};
 
@@ -8,25 +7,38 @@ struct login_form {
   char password[20];
 };
 
-void display_login_menu(struct login_form *form) {
+void tui_welcome() {
+  printf("=================================\n");
+  printf("=\t欢迎使用员工管理系统\t=\n");
+  printf("=\t\t请登录\t\t=\n");
+  printf("=================================\n");
+}
+
+void tui_login_repl(struct login_form *form) {
   printf("请输入用户名>>> ");
   scanf("%s", form->username);
   printf("请输入密码>>> ");
   scanf("%s", form->password);
 }
 
-void display_main_menu_for_user(int *choice) {
-  while (*choice < 1 || *choice > 4) {
+void tui_main_menu(int *choice) {
+  while (1) {
     printf("1. 查询\n");
     printf("2. 修改\n");
     printf("3. 删除\n");
     printf("4. 添加\n");
     printf("请输入>>> ");
-    scanf("%d", choice);
+    if (scanf("%d", choice) != 1 || *choice < 1 || *choice > 4) {
+      printf("输入错误，请重新输入\n");
+      while (getchar() != '\n')
+        ;
+      continue;
+    } else {
+      break;
+    }
   }
+  printf("=================================\n");
 }
-
-void display_main_menu_for_admin(int *choice) {}
 
 int main() {
   int sfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -46,11 +58,12 @@ int main() {
   }
 
   ssize_t read_size = 0;
+  tui_welcome(); // 成功连接服务器后，显示欢迎界面
   while (1) {
     struct message msg;
     while (1) { // loop for login
       struct login_form form;
-      display_login_menu(&form);
+      tui_login_repl(&form);
       gen_login_msg(&msg, form.username, form.password);
       // 发送登录信息
       if (send(sfd, &msg, sizeof(msg), 0) < 0) {
@@ -68,6 +81,7 @@ int main() {
       } else {
         if (msg.ctype == MSG_OK) {
           printf("登录成功\n");
+          printf("=================================\n");
           strcpy(my_name, form.username);
           break;
         } else { // MSG_ERROR
@@ -81,7 +95,7 @@ int main() {
     while (1) {
       choice = 0;
       char name[20];
-      display_main_menu_for_user(&choice);
+      tui_main_menu(&choice);
       switch (choice) {
       case 1:
         printf("请输入要查询的用户名>>> ");
@@ -90,12 +104,15 @@ int main() {
         break;
       case 2:
         msg.ctype = MSG_UPDATE;
+        char temp[20] = {0};
         printf("请输入要修改的用户名>>> ");
         scanf("%s", msg.st.name);
         printf("请输入要修改的用户年龄>>> ");
-        scanf("%d", &msg.st.age);
+        scanf("%s", (char *)&temp);
+        msg.st.age = atoi(temp);
         printf("请输入要修改的用户性别(1:Female/2:Male)>>> ");
-        scanf("%d", (int *)&msg.st.sex);
+        scanf("%s", (char *)&temp);
+        msg.st.sex = atoi(temp);
         printf("请输入要修改的用户电话>>> ");
         scanf("%s", msg.st.phone);
         printf("请输入要修改的用户部门>>> ");
@@ -103,7 +120,8 @@ int main() {
         printf("请输入要修改的用户密码>>> ");
         scanf("%s", msg.st.password);
         printf("请输入要修改的用户权限(1:User/2:Admin)>>> ");
-        scanf("%d", (int *)&msg.st.type);
+        scanf("%s", (char *)&temp);
+        msg.st.type = atoi(temp);
         break;
       case 3:
         msg.ctype = MSG_DELETE;
@@ -135,7 +153,7 @@ int main() {
         return -1;
       }
       bzero(&msg, sizeof(msg));
-      // 接受部分====================================================
+      // 接收部分====================================================
       if ((read_size = recv(sfd, &msg, sizeof(msg), 0)) < 0) {
         ERR_MSG("recv");
         return -1;
@@ -143,19 +161,20 @@ int main() {
         printf("server closed\n");
         break; // choice loop
       } else {
-        printf("recv: %s\n", (char *)&msg);
         switch (msg.ctype) {
-        case MSG_OK:
+        case MSG_OK: // 成功回复（删除，修改，添加）
           printf("ok: %s\n", msg.buf);
           break;
-        case MSG_ERROR:
+        case MSG_ERROR: // 失败回复（删除，修改，添加）
           printf("error: %s\n", msg.buf);
-          break; // switch res type
-        case MSG_QUERY_RES:
-          printf("debug");
+          break;            // switch res type
+        case MSG_QUERY_RES: // 查询回复 (st 有数据)
+          printf("您查询的用户信息如下：\n");
+          printf("=================================\n");
           print_info(&msg.st);
           break; // switch res type
         }
+        printf("=================================\n");
       }
     }
   }

@@ -3,6 +3,18 @@
 
 #include "util.h"
 
+// 消息的类型
+enum cmd_type {
+  MSG_LOGIN = 1,
+  MSG_QUERY,
+  MSG_INSERT,
+  MSG_UPDATE,
+  MSG_DELETE,
+  MSG_OK,
+  MSG_ERROR,
+  MSG_QUERY_RES,
+};
+
 // 消息结构体
 struct message {
   char name[20];        // 发送方姓名

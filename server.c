@@ -208,7 +208,7 @@ int main(int argc, const char *argv[]) {
             close(events[i].data.fd);
           } else {
             struct message msg; // 接受和发送使用同一个结构体
-            memcpy(&msg, &buf, sizeof(msg));
+            memcpy(&msg, &buf, sizeof(msg)); // 将接收到的消息转换为消息结构体
             switch (msg.ctype) {
             case MSG_LOGIN: // 用户登录
               on_login_request(&msg);

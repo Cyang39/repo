@@ -27,7 +27,7 @@ struct username_pair {
 
 // 打印用户信息
 void print_info(struct info *user) {
-  printf("Name:\t%s\n", user->name);
+  printf("Name:\t\t%s\n", user->name);
   printf("Age:\t\t%d\n", user->age);
   printf("Dept:\t\t%s\n", user->department);
   printf("Sex:\t\t%s\n", user->sex == FEMALE ? "female" : "male");
