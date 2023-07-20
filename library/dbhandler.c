@@ -159,3 +159,35 @@ int update_db_by_username(sqlite3 *db, char *name, struct info *user) {
   }
   return 0;
 }
+
+int insert_log_db(sqlite3 *db, char *name, char *action) {
+  char *sql;
+  char query[1024] = {0};
+  sprintf(query, SQL_LOG_INSERT, name, action);
+  sql = query;
+  if (sqlite3_exec(db, sql, NULL, NULL, NULL) != SQLITE_OK) {
+    printf("error on sqlite_exec(): %s\n", sqlite3_errmsg(db));
+    exit(-1);
+  }
+  return 0;
+}
+
+int query_log_db(sqlite3 *db, char *logs) {
+  char *sql;
+  char **result;
+  int nrow, ncolumn;
+  char *errmsg;
+  if (sqlite3_get_table(db, SQL_LOG_QUERY, &result, &nrow, &ncolumn, &errmsg) !=
+      SQLITE_OK) {
+    printf("error on sqlite3_get_table(): %s\n", errmsg);
+    exit(-1);
+  }
+  for (int i = 1; i <= nrow; i++) {
+    char line[100] = {0};
+    sprintf(line, "[%s] %s 查询了 %s\n", result[i * ncolumn + 1], result[i * ncolumn], result[i * ncolumn + 2]);
+    strcat(logs, line);
+  }
+  sqlite3_free_table(result);
+  return 0;
+}
+

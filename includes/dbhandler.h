@@ -33,6 +33,13 @@
 #define SQL_QUERY_TABLE_BY_USERNAME                                            \
   "SELECT * FROM employee WHERE name = \"%s\";"
 
+#define SQL_LOG_INSERT                                                         \
+  "INSERT INTO log VALUES ('%s', datetime(\"now\"), '%s');"
+
+#define SQL_LOG_QUERY                                                          \
+  "SELECT * FROM log ORDER BY time DESC LIMIT 10;"
+
+// 初始化数据库
 void init_db(sqlite3 *db);
 // 插入员工数据到数据库
 int insert_db(sqlite3 *db, struct info *user);
@@ -50,5 +57,9 @@ int query_info_db_by_username(sqlite3 *db, char *name, struct info *st);
 int check_admin_db(sqlite3 *db);
 // 检查用户的类别
 enum user_type check_user_type(sqlite3 *db, char *name);
+// 插入日志
+int insert_log_db(sqlite3 *db, char *name, char *action);
+// 读取日志（只读取最近 10 条）
+int query_log_db(sqlite3 *db, char *log);
 
 #endif // !__DBHANDLER_H__

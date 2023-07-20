@@ -10,9 +10,11 @@ enum cmd_type {
   MSG_INSERT,
   MSG_UPDATE,
   MSG_DELETE,
+  MSG_LOG,
   MSG_OK,
   MSG_ERROR,
   MSG_QUERY_RES,
+  MSG_LOG_RES,
 };
 
 // 消息结构体

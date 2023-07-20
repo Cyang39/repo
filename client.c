@@ -27,8 +27,9 @@ void tui_main_menu(int *choice) {
     printf("2. 修改\n");
     printf("3. 删除\n");
     printf("4. 添加\n");
+    printf("5. 日志\n");
     printf("请输入>>> ");
-    if (scanf("%d", choice) != 1 || *choice < 1 || *choice > 4) {
+    if (scanf("%d", choice) != 1 || *choice < 1 || *choice > 5) {
       printf("输入错误，请重新输入\n");
       while (getchar() != '\n')
         ;
@@ -146,6 +147,9 @@ int main() {
         printf("请输入要添加的用户权限(1:User/2:Admin)>>> ");
         scanf("%d", (int *)&msg.st.type);
         break;
+      case 5:
+        msg.ctype = MSG_LOG;
+        break;
       }
       strcpy(msg.name, my_name);
       if (send(sfd, &msg, sizeof(msg), 0) < 0) {
@@ -173,6 +177,10 @@ int main() {
           printf("=================================\n");
           print_info(&msg.st);
           break; // switch res type
+        case MSG_LOG_RES:
+          printf("您查询的日志信息如下：\n");
+          printf("=================================\n");
+          printf("%s\n", msg.buf);
         }
         printf("=================================\n");
       }

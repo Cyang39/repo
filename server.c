@@ -1,4 +1,5 @@
 #include "server.h"
+#include "message.h"
 
 sqlite3 *db; // 数据库
 
@@ -40,8 +41,14 @@ void on_query_request(struct message *msg) {
     strcpy(msg->buf, "普通用户只能查询自己的信息");
     return;
   }
+  int ret;
+  ret = insert_log_db(db, msg->name, msg->buf);
+  if (ret < 0) {
+    ERR_MSG("error on logging query\n");
+    exit(-1);
+  }
   struct info user;
-  int ret = query_info_db_by_username(db, msg->buf, &user);
+  ret = query_info_db_by_username(db, msg->buf, &user);
   if (ret < 0) {
     msg->ctype = MSG_ERROR;
     strcpy(msg->buf, "该员工不存在");
@@ -107,6 +114,24 @@ void on_update_request(struct message *msg) {
   } else {
     msg->ctype = MSG_OK;
     strcpy(msg->buf, "修改成功");
+  }
+}
+
+void on_log_request(struct message *msg) {
+  if (check_user_type(db, msg->name) != USER_ADMIN) {
+    msg->ctype = MSG_ERROR;
+    strcpy(msg->buf, "权限不足");
+    return;
+  }
+  int ret;
+  bzero(msg->buf, sizeof(msg->buf)); // 使用 buf 前先清空
+  // log 只拿 10 条，不会超过 1024，因为每条 log 最多 100 个字符
+  ret = query_log_db(db, (char *)&msg->buf);
+  if (ret < 0) {
+    msg->ctype = MSG_ERROR;
+    strcpy(msg->buf, "查询日志失败");
+  } else {
+    msg->ctype = MSG_LOG_RES;
   }
 }
 
@@ -224,6 +249,9 @@ int main(int argc, const char *argv[]) {
               break;
             case MSG_UPDATE: // 更新员工信息
               on_update_request(&msg);
+              break;
+            case MSG_LOG:
+              on_log_request(&msg); // 查询日志
               break;
             }
             write(events[i].data.fd, &msg, n);
