@@ -1,5 +1,4 @@
 #include "server.h"
-#include "message.h"
 
 sqlite3 *db; // 数据库
 
@@ -96,9 +95,10 @@ void on_delete_request(struct message *msg) {
 
 // 更新员工信息
 void on_update_request(struct message *msg) {
+  // 注意：此时 buf 保存原员工名称
   // 注意：此时 msg->st 中存放的是要更新的员工的完整信息
   if (check_user_type(db, msg->name) == USER_NORMAL &&
-      strcmp(msg->st.name, msg->name) != 0) {
+      strcmp(msg->buf, msg->name) != 0) {
     msg->ctype = MSG_ERROR;
     strcpy(msg->buf, "普通用户只能修改自己的信息");
     return;
@@ -107,7 +107,7 @@ void on_update_request(struct message *msg) {
     // 普通用户不能修改用户类型
     msg->st.type = USER_NORMAL;
   }
-  int ret = update_db_by_username(db, msg->st.name, &msg->st);
+  int ret = update_db_by_username(db, msg->buf, &msg->st);
   if (ret < 0) {
     msg->ctype = MSG_ERROR;
     strcpy(msg->buf, "该员工不存在");

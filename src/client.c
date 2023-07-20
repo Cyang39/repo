@@ -114,7 +114,9 @@ int main() {
         break;
       case 2:
         msg.ctype = MSG_UPDATE;
-        printf("请输入要修改的用户名>>> ");
+        printf("请指定要修改的用户名>>> ");
+        scanf("%s", msg.buf);
+        printf("请输入要修改的用户名称>>> ");
         scanf("%s", msg.st.name);
         printf("请输入要修改的用户年龄>>> ");
         scanf("%s", (char *)&temp);
