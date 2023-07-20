@@ -7,13 +7,15 @@ project(EMS_POJECT)
 # 使用 SQLite3 库
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lsqlite3")
 # 头文件
-include_directories(${PROJECT_SOURCE_DIR}/includes)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 # 可执行文件输出路径
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 # 需要编译的可执行文件
-add_executable(server server.c ${PROJECT_SOURCE_DIR}/library/message.c
-                               ${PROJECT_SOURCE_DIR}/library/dbhandler.c)
-add_executable(client client.c ${PROJECT_SOURCE_DIR}/library/message.c)
+add_executable(server ${PROJECT_SOURCE_DIR}/src/server.c 
+                      ${PROJECT_SOURCE_DIR}/src/message.c
+                      ${PROJECT_SOURCE_DIR}/src/dbhandler.c)
+add_executable(client ${PROJECT_SOURCE_DIR}/src/client.c 
+                      ${PROJECT_SOURCE_DIR}/src/message.c)
 # 链接 SQLite3 库
 include_directories(/usr/include)
 link_directories(/usr/lib)

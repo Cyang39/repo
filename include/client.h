@@ -1,7 +1,6 @@
 #ifndef __CLIENT_H__
 #define __CLIENT_H__
 
-#include "util.h"
 #include "message.h"
 #include <arpa/inet.h>
 #include <stdio.h>

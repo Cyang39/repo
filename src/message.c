@@ -1,24 +1,4 @@
 #include "message.h"
-#include <ctype.h>
-
-void trim(char *str) {
-  int start = 0;
-  int end = strlen(str) - 1;
-  // 寻找字符串开头的空白字符
-  while (isspace(str[start])) {
-    start++;
-  }
-  // 寻找字符串末尾的空白字符
-  while (end >= start && isspace(str[end])) {
-    end--;
-  }
-  // 移动字符串内容，去除首尾空白字符
-  int i, j;
-  for (i = start, j = 0; i <= end; i++, j++) {
-    str[j] = str[i];
-  }
-  str[j] = '\0'; // 添加字符串结束符
-}
 
 struct username_pair {
   char username[20];

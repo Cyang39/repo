@@ -41,7 +41,41 @@ void tui_main_menu(int *choice) {
   printf("=================================\n");
 }
 
+int on_login(int sfd, struct message *msg) {
+  int read_size;
+  while (1) { // loop for login
+    struct login_form form;
+    tui_login_repl(&form);
+    gen_login_msg(msg, form.username, form.password);
+    // 发送登录信息
+    if (send(sfd, msg, sizeof(struct message), 0) < 0) {
+      ERR_MSG("send");
+      return -1;
+    }
+    // 接收登录结果
+    bzero(msg, sizeof(struct message));
+    if ((read_size = recv(sfd, msg, sizeof(struct message), 0)) < 0) {
+      ERR_MSG("recv");
+      return -1;
+    } else if (read_size == 0) {
+      printf("server closed\n");
+      break;
+    } else {
+      if (msg->ctype == MSG_OK) {
+        printf("登录成功\n");
+        printf("=================================\n");
+        strcpy(my_name, form.username);
+        break;
+      } else { // MSG_ERROR
+        printf("%s\n", msg->buf);
+      }
+    }
+  }
+  return 0;
+}
+
 int main() {
+  int ret;
   int sfd = socket(AF_INET, SOCK_STREAM, 0);
   if (sfd < 0) {
     ERR_MSG("socket");
@@ -52,8 +86,7 @@ int main() {
   addr.sin_port = htons(SERVER_PORT);
   addr.sin_addr.s_addr = inet_addr(SERVER_IP);
 
-  int ret = connect(sfd, (struct sockaddr *)&addr, sizeof(addr));
-  if (ret < 0) {
+  if (connect(sfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
     ERR_MSG("connect");
     return -1;
   }
@@ -62,40 +95,16 @@ int main() {
   tui_welcome(); // 成功连接服务器后，显示欢迎界面
   while (1) {
     struct message msg;
-    while (1) { // loop for login
-      struct login_form form;
-      tui_login_repl(&form);
-      gen_login_msg(&msg, form.username, form.password);
-      // 发送登录信息
-      if (send(sfd, &msg, sizeof(msg), 0) < 0) {
-        ERR_MSG("send");
-        return -1;
-      }
-      // 接收登录结果
-      bzero(&msg, sizeof(msg));
-      if ((read_size = recv(sfd, &msg, sizeof(msg), 0)) < 0) {
-        ERR_MSG("recv");
-        return -1;
-      } else if (read_size == 0) {
-        printf("server closed\n");
-        break;
-      } else {
-        if (msg.ctype == MSG_OK) {
-          printf("登录成功\n");
-          printf("=================================\n");
-          strcpy(my_name, form.username);
-          break;
-        } else { // MSG_ERROR
-          printf("%s\n", msg.buf);
-        }
-      }
+    if (on_login(sfd, &msg) < 0) {
+      return -1;
     }
     bzero(&msg, sizeof(msg));
     // 如果登录成功
     int choice;
     while (1) {
       choice = 0;
-      char name[20];
+      char name[20] = {0};
+      char temp[20] = {0};
       tui_main_menu(&choice);
       switch (choice) {
       case 1:
@@ -105,7 +114,6 @@ int main() {
         break;
       case 2:
         msg.ctype = MSG_UPDATE;
-        char temp[20] = {0};
         printf("请输入要修改的用户名>>> ");
         scanf("%s", msg.st.name);
         printf("请输入要修改的用户年龄>>> ");
@@ -135,9 +143,11 @@ int main() {
         printf("请输入要添加的用户名>>> ");
         scanf("%s", msg.st.name);
         printf("请输入要添加的用户年龄>>> ");
-        scanf("%d", &msg.st.age);
+        scanf("%s", (char *)&temp);
+        msg.st.age = atoi(temp);
         printf("请输入要添加的用户性别(1:Female/2:Male)>>> ");
-        scanf("%d", (int *)&msg.st.sex);
+        scanf("%s", (char *)&temp);
+        msg.st.sex = atoi(temp);
         printf("请输入要添加的用户电话>>> ");
         scanf("%s", msg.st.phone);
         printf("请输入要添加的用户部门>>> ");
@@ -145,7 +155,8 @@ int main() {
         printf("请输入要添加的用户密码>>> ");
         scanf("%s", msg.st.password);
         printf("请输入要添加的用户权限(1:User/2:Admin)>>> ");
-        scanf("%d", (int *)&msg.st.type);
+        scanf("%s", (char *)&temp);
+        msg.st.type = atoi(temp);
         break;
       case 5:
         msg.ctype = MSG_LOG;
