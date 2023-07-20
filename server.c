@@ -2,6 +2,23 @@
 
 #define ADMIN_NAME "root"
 #define ADMIN_PASSWD "1234"
+sqlite3 *db;
+
+// 处理添加员工请求
+void on_insert_requset(struct message *msg) {
+  int ret;
+  // 此时客户端传来的 msg.st 是一个完整的员工信息
+  if (check_user_type(db, msg->name) != USER_ADMIN) {
+    msg->ctype = MSG_ERROR;
+    strcpy(msg->buf, "权限不足");
+    return;
+  }
+  ret = insert_db(db, &msg->st);
+  if (ret < 0) {
+    msg->ctype = MSG_ERROR;
+    strcpy(msg->buf, "该员工已存在");
+  }
+}
 
 int main(int argc, const char *argv[]) {
   if (argc != 2) {
@@ -9,7 +26,6 @@ int main(int argc, const char *argv[]) {
     return -1;
   }
   // 打开数据库
-  sqlite3 *db;
   if (sqlite3_open(argv[1], &db) != SQLITE_OK) {
     printf("error on sqlite_open(): %s\n", sqlite3_errmsg(db));
     exit(-1);
@@ -164,12 +180,7 @@ int main(int argc, const char *argv[]) {
               }
               break;
             case MSG_INSERT:
-              // 此时客户端传来的 msg.st 是一个完整的员工信息
-              ret = insert_db(db, &msg.st);
-              if (ret < 0) {
-                msg.ctype = MSG_ERROR;
-                strcpy(msg.buf, "该员工已存在");
-              }
+              on_insert_requset(&msg);
               break;
             case MSG_DELETE:
               printf("user request delete\n");
