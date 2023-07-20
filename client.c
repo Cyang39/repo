@@ -90,6 +90,20 @@ int main() {
         break;
       case 2:
         msg.ctype = MSG_UPDATE;
+        printf("请输入要修改的用户名>>> ");
+        scanf("%s", msg.st.name);
+        printf("请输入要修改的用户年龄>>> ");
+        scanf("%d", &msg.st.age);
+        printf("请输入要修改的用户性别(1:Female/2:Male)>>> ");
+        scanf("%d", (int *)&msg.st.sex);
+        printf("请输入要修改的用户电话>>> ");
+        scanf("%s", msg.st.phone);
+        printf("请输入要修改的用户部门>>> ");
+        scanf("%s", msg.st.department);
+        printf("请输入要修改的用户密码>>> ");
+        scanf("%s", msg.st.password);
+        printf("请输入要修改的用户权限(1:User/2:Admin)>>> ");
+        scanf("%d", (int *)&msg.st.type);
         break;
       case 3:
         msg.ctype = MSG_DELETE;

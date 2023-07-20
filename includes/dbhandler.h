@@ -14,13 +14,17 @@
 #define SQL_INSERT_TABLE                                                       \
   "INSERT INTO employee VALUES ('%s', '%s', %d, '%s', %d, '%s', %d);"
 
-#define SQL_REMOVE_TABLE_BY_USERNAME                                           \
-  "DELETE FROM employee WHERE name = \"%s\";"
+#define SQL_REMOVE_TABLE_BY_USERNAME "DELETE FROM employee WHERE name = \"%s\";"
+
+#define SQL_UPDATE_TABLE_BY_USERNAME                                           \
+  "UPDATE employee set "                                                        \
+  "name=\"%s\", password=\"%s\", age=%d, department=\"%s\", sex=%d,"           \
+  "phone=\"%s\", type=%d WHERE name = \"%s\";"
 
 #define SQL_CHECK_TABLE_BY_USERNAME                                            \
   "SELECT COUNT(*) FROM employee WHERE name = \"%s\";"
 
-#define SQL_CHECK_TABLE_BY_USERNAME_AND_PASSWORD                              \
+#define SQL_CHECK_TABLE_BY_USERNAME_AND_PASSWORD                               \
   "SELECT COUNT(*) FROM employee WHERE name = \"%s\" AND password = \"%s\";"
 
 #define SQL_QUERY_TABLE_BY_USERNAME                                            \
@@ -35,6 +39,8 @@ int check_db_by_username(sqlite3 *db, char *name);
 int check_db_by_username_and_password(sqlite3 *db, char *name, char *password);
 // 从数据库删除员工信息
 int delete_db_by_username(sqlite3 *db, char *name);
+// 从数据库更新员工信息
+int update_db_by_username(sqlite3 *db, char *name, struct info *user);
 // 从数据库获取员工结构体
 int query_info_db_by_username(sqlite3 *db, char *name, struct info *st);
 // 检查用户的类别

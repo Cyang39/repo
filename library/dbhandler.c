@@ -117,3 +117,19 @@ int delete_db_by_username(sqlite3 *db, char *name) {
   return 0;
 }
 
+int update_db_by_username(sqlite3 *db, char *name, struct info *user) {
+  if(check_db_by_username(db, name) == -1) {
+    return -1;
+  }
+  char *sql;
+  char query[1024] = {0};
+  sprintf(query, SQL_UPDATE_TABLE_BY_USERNAME, user->name, user->password, user->age,
+          user->department, user->sex, user->phone, user->type, name);
+  sql = query;
+  if (sqlite3_exec(db, sql, NULL, NULL, NULL) != SQLITE_OK) {
+    printf("error on sqlite_exec(): %s\n", sqlite3_errmsg(db));
+    exit(-1);
+  }
+  return 0;
+}
+

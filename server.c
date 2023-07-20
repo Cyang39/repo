@@ -5,6 +5,29 @@
 
 sqlite3 *db; // 数据库
 
+void on_query_request(struct message *msg) {
+#ifdef DEBUG
+  // buf 为要查找的员工 name
+  char dbug_msg[2048];
+  sprintf(dbug_msg, "query>username: '%s'", msg->buf);
+  DEBUG_MSG(dbug_msg);
+#endif
+  if (check_user_type(db, msg->name) == USER_NORMAL &&
+      strcmp(msg->buf, msg->name) != 0) {
+    msg->ctype = MSG_ERROR;
+    strcpy(msg->buf, "普通用户只能查询自己的信息");
+    return;
+  }
+  struct info user;
+  int ret = query_info_db_by_username(db, msg->buf, &user);
+  if (ret < 0) {
+    msg->ctype = MSG_ERROR;
+    strcpy(msg->buf, "该员工不存在");
+  } else {
+    gen_query_by_name_res_msg(msg, &user);
+  }
+}
+
 // 处理添加员工请求
 void on_insert_requset(struct message *msg) {
   int ret;
@@ -39,6 +62,29 @@ void on_delete_request(struct message *msg) {
   } else {
     msg->ctype = MSG_OK;
     strcpy(msg->buf, "删除成功");
+  }
+}
+
+// 更新员工信息
+void on_update_request(struct message *msg) {
+  // 注意：此时 msg->st 中存放的是要更新的员工的完整信息
+  if (check_user_type(db, msg->name) == USER_NORMAL &&
+      strcmp(msg->st.name, msg->name) != 0) {
+    msg->ctype = MSG_ERROR;
+    strcpy(msg->buf, "普通用户只能修改自己的信息");
+    return;
+  }
+  if (check_user_type(db, msg->name) == USER_NORMAL) {
+    // 普通用户不能修改用户类型
+    msg->st.type = USER_NORMAL;
+  }
+  int ret = update_db_by_username(db, msg->st.name, &msg->st);
+  if (ret < 0) {
+    msg->ctype = MSG_ERROR;
+    strcpy(msg->buf, "该员工不存在");
+  } else {
+    msg->ctype = MSG_OK;
+    strcpy(msg->buf, "修改成功");
   }
 }
 
@@ -178,28 +224,8 @@ int main(int argc, const char *argv[]) {
                 }
               }
               break;
-            case MSG_QUERY:
-              printf("user request query\n");
-              // buf 为要查找的员工 name
-#ifdef DEBUG
-              char dbug_msg[2048];
-              sprintf(dbug_msg, "query>username: '%s'", msg.buf);
-              DEBUG_MSG(dbug_msg);
-#endif
-              if (check_user_type(db, msg.name) == USER_NORMAL &&
-                  strcmp(msg.buf, msg.name) != 0) {
-                msg.ctype = MSG_ERROR;
-                strcpy(msg.buf, "普通用户只能查询自己的信息");
-                break;
-              }
-              struct info user;
-              ret = query_info_db_by_username(db, msg.buf, &user);
-              if (ret < 0) {
-                msg.ctype = MSG_ERROR;
-                strcpy(msg.buf, "该员工不存在");
-              } else {
-                gen_query_by_name_res_msg(&msg, &user);
-              }
+            case MSG_QUERY: // 查询员工信息
+              on_query_request(&msg);
               break;
             case MSG_INSERT: // 添加员工
               on_insert_requset(&msg);
@@ -207,8 +233,8 @@ int main(int argc, const char *argv[]) {
             case MSG_DELETE: // 删除员工
               on_delete_request(&msg);
               break;
-            case MSG_UPDATE:
-              printf("user request update\n");
+            case MSG_UPDATE: // 更新员工信息
+              on_update_request(&msg);
               break;
             }
             write(events[i].data.fd, &msg, n);
