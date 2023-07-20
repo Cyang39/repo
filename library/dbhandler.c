@@ -101,3 +101,19 @@ enum user_type check_user_type(sqlite3 *db, char *name) {
   query_info_db_by_username(db, name, &st);
   return st.type;
 }
+
+int delete_db_by_username(sqlite3 *db, char *name) {
+  if (check_db_by_username(db, name) == -1) {
+    return -1;
+  }
+  char *sql;
+  char query[1024] = {0};
+  sprintf(query, SQL_REMOVE_TABLE_BY_USERNAME, name);
+  sql = query;
+  if (sqlite3_exec(db, sql, NULL, NULL, NULL) != SQLITE_OK) {
+    printf("error on sqlite_exec(): %s\n", sqlite3_errmsg(db));
+    exit(-1);
+  }
+  return 0;
+}
+

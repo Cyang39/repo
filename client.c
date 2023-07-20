@@ -93,6 +93,9 @@ int main() {
         break;
       case 3:
         msg.ctype = MSG_DELETE;
+        printf("请输入要删除的用户名>>> ");
+        memset(msg.buf, 0, sizeof(msg.buf));
+        scanf("%s", msg.buf);
         break;
       case 4:
         msg.ctype = MSG_INSERT;
@@ -128,6 +131,9 @@ int main() {
       } else {
         printf("recv: %s\n", (char *)&msg);
         switch (msg.ctype) {
+        case MSG_OK:
+          printf("ok: %s\n", msg.buf);
+          break;
         case MSG_ERROR:
           printf("error: %s\n", msg.buf);
           break; // switch res type

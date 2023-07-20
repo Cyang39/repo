@@ -2,21 +2,43 @@
 
 #define ADMIN_NAME "root"
 #define ADMIN_PASSWD "1234"
-sqlite3 *db;
+
+sqlite3 *db; // 数据库
 
 // 处理添加员工请求
 void on_insert_requset(struct message *msg) {
   int ret;
-  // 此时客户端传来的 msg.st 是一个完整的员工信息
   if (check_user_type(db, msg->name) != USER_ADMIN) {
     msg->ctype = MSG_ERROR;
     strcpy(msg->buf, "权限不足");
     return;
   }
+  // 注意：此时客户端传来的 msg.st 是一个完整的员工信息
   ret = insert_db(db, &msg->st);
   if (ret < 0) {
     msg->ctype = MSG_ERROR;
     strcpy(msg->buf, "该员工已存在");
+  } else {
+    msg->ctype = MSG_OK;
+    strcpy(msg->buf, "添加成功");
+  }
+}
+
+// 处理删除员工请求
+void on_delete_request(struct message *msg) {
+  if (check_user_type(db, msg->name) != USER_ADMIN) {
+    msg->ctype = MSG_ERROR;
+    strcpy(msg->buf, "权限不足");
+    return;
+  }
+  // 注意：此时 msg->buf 中存放的是要删除的员工的用户名
+  int ret = delete_db_by_username(db, msg->buf);
+  if (ret < 0) {
+    msg->ctype = MSG_ERROR;
+    strcpy(msg->buf, "该员工不存在");
+  } else {
+    msg->ctype = MSG_OK;
+    strcpy(msg->buf, "删除成功");
   }
 }
 
@@ -179,11 +201,11 @@ int main(int argc, const char *argv[]) {
                 gen_query_by_name_res_msg(&msg, &user);
               }
               break;
-            case MSG_INSERT:
+            case MSG_INSERT: // 添加员工
               on_insert_requset(&msg);
               break;
-            case MSG_DELETE:
-              printf("user request delete\n");
+            case MSG_DELETE: // 删除员工
+              on_delete_request(&msg);
               break;
             case MSG_UPDATE:
               printf("user request update\n");

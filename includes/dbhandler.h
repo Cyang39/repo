@@ -14,6 +14,9 @@
 #define SQL_INSERT_TABLE                                                       \
   "INSERT INTO employee VALUES ('%s', '%s', %d, '%s', %d, '%s', %d);"
 
+#define SQL_REMOVE_TABLE_BY_USERNAME                                           \
+  "DELETE FROM employee WHERE name = \"%s\";"
+
 #define SQL_CHECK_TABLE_BY_USERNAME                                            \
   "SELECT COUNT(*) FROM employee WHERE name = \"%s\";"
 
@@ -30,6 +33,8 @@ int insert_db(sqlite3 *db, struct info *user);
 int check_db_by_username(sqlite3 *db, char *name);
 // 检查用户名和密码是否匹配
 int check_db_by_username_and_password(sqlite3 *db, char *name, char *password);
+// 从数据库删除员工信息
+int delete_db_by_username(sqlite3 *db, char *name);
 // 从数据库获取员工结构体
 int query_info_db_by_username(sqlite3 *db, char *name, struct info *st);
 // 检查用户的类别
