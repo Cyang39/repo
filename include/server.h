@@ -15,4 +15,17 @@
 #define MAX_CLIENT 100
 #define PORT 8888
 
+typedef struct online {
+  int fd;
+  char name[20];
+  struct online *next;
+} online_t;
+
+sqlite3 *db;            // 数据库
+online_t *online_store; // 在线用户链表
+
+int check_online(char *name);
+int store_online(int fd, char *name);
+int delete_online(int fd);
+
 #endif

@@ -1,9 +1,48 @@
 #include "server.h"
 
-sqlite3 *db; // 数据库
+int check_online(char *name) {
+  while (online_store) {
+    if (strcmp(online_store->name, name) == 0) {
+      return 0;
+    } else {
+      online_store = online_store->next;
+    }
+  }
+  return 1;
+}
+
+// 保存已经连接的用户
+int store_online(int fd, char *name) {
+  if (check_online(name) == 0) {
+    return -1;
+  }
+  online_t *t = (online_t *)malloc(sizeof(online_t));
+  t->fd = fd;
+  memset(t->name, 0, sizeof(t->name));
+  memcpy(t->name, name, strlen(name));
+  t->next = online_store;
+  online_store = t;
+  return 0;
+}
+
+// 删除已连接的用户
+int delete_online(int fd) {
+  online_t *t = online_store;
+  online_t *p = online_store;
+  while (t) {
+    if (t->fd == fd) {
+      p->next = t->next;
+      free(t);
+      return 0;
+    }
+    p = t;
+    t = t->next;
+  }
+  return -1;
+}
 
 // 处理登录请求
-void on_login_request(struct message *msg) {
+void on_login_request(struct message *msg, int fd) {
   char username[20];
   char password[20];
   get_username(msg, (char *)&username);
@@ -21,8 +60,16 @@ void on_login_request(struct message *msg) {
     msg->ctype = MSG_ERROR;
     strcpy(msg->buf, "用户名或密码错误");
   } else {
+    // 检查是否已经登录
+    if (check_online(username) == 0) {
+      msg->ctype = MSG_ERROR;
+      strcpy(msg->buf, "该用户已经登录");
+      return;
+    }
     msg->ctype = MSG_OK;
     strcpy(msg->buf, "登录成功");
+    // 保存已经登录的用户
+    store_online(fd, username);
   }
 }
 
@@ -231,12 +278,14 @@ int main(int argc, const char *argv[]) {
           if (n == 0) {
             printf("client closed\n");
             close(events[i].data.fd);
+            // 删除已连接的客户端
+            delete_online(events[i].data.fd);
           } else {
             struct message msg; // 接受和发送使用同一个结构体
             memcpy(&msg, &buf, sizeof(msg)); // 将接收到的消息转换为消息结构体
             switch (msg.ctype) {
             case MSG_LOGIN: // 用户登录
-              on_login_request(&msg);
+              on_login_request(&msg, events[i].data.fd);
               break;
             case MSG_QUERY: // 查询员工信息
               on_query_request(&msg);
