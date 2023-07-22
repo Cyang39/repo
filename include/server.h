@@ -27,5 +27,6 @@ online_t *online_store; // 在线用户链表
 int check_online(char *name);
 int store_online(int fd, char *name);
 int delete_online(int fd);
+char *get_name(int fd, char *name); // 遍历，获取 fd 对应的用户名
 
 #endif

@@ -41,6 +41,18 @@ int delete_online(int fd) {
   return -1;
 }
 
+char *get_name(int fd, char *name) {
+  online_t *t = online_store;
+  while (t) {
+    if (t->fd == fd) {
+      strcpy(name, t->name);
+      return name;
+    }
+    t = t->next;
+  }
+  return NULL;
+}
+
 // 处理登录请求
 void on_login_request(struct message *msg, int fd) {
   char username[20];
@@ -283,25 +295,39 @@ int main(int argc, const char *argv[]) {
           } else {
             struct message msg; // 接受和发送使用同一个结构体
             memcpy(&msg, &buf, sizeof(msg)); // 将接收到的消息转换为消息结构体
-            switch (msg.ctype) {
-            case MSG_LOGIN: // 用户登录
-              on_login_request(&msg, events[i].data.fd);
-              break;
-            case MSG_QUERY: // 查询员工信息
-              on_query_request(&msg);
-              break;
-            case MSG_INSERT: // 添加员工
-              on_insert_requset(&msg);
-              break;
-            case MSG_DELETE: // 删除员工
-              on_delete_request(&msg);
-              break;
-            case MSG_UPDATE: // 更新员工信息
-              on_update_request(&msg);
-              break;
-            case MSG_LOG:
-              on_log_request(&msg); // 查询日志
-              break;
+            // 检查请求用户名和文件描述符是否对应
+            // 这步操作是为了防止客户端伪造用户名以进行管理员权限操作
+            char _name[20];
+            get_name(events[i].data.fd, (char *)&_name);
+            // 如果消息结构体里的用户名没有在在线用户列表中，并且请求的不是登录操作
+            if (check_online(msg.name) != 0 && msg.ctype != MSG_LOGIN) {
+              msg.ctype = MSG_ERROR;
+              strcpy(msg.buf, "用户未登录");
+              // 如果消息结构体里的用户名和文件描述符不对应
+            } else if (check_online(msg.name) == 0 && strcmp(_name, msg.name)) {
+              msg.ctype = MSG_ERROR;
+              strcpy(msg.buf, "用户名和文件描述符不对应");
+            } else {
+              switch (msg.ctype) {
+              case MSG_LOGIN: // 用户登录
+                on_login_request(&msg, events[i].data.fd);
+                break;
+              case MSG_QUERY: // 查询员工信息
+                on_query_request(&msg);
+                break;
+              case MSG_INSERT: // 添加员工
+                on_insert_requset(&msg);
+                break;
+              case MSG_DELETE: // 删除员工
+                on_delete_request(&msg);
+                break;
+              case MSG_UPDATE: // 更新员工信息
+                on_update_request(&msg);
+                break;
+              case MSG_LOG:
+                on_log_request(&msg); // 查询日志
+                break;
+              }
             }
             write(events[i].data.fd, &msg, n);
           }
